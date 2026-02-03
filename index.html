@@ -129,9 +129,9 @@
         <h1>NIVEL 4: Sueños ✈️</h1>
         <div class="gif-frame"><img src="snoopy7.gif" alt="Viaje"></div>
         <p>Si pudiéramos viajar ya mismo, ¿a dónde iríamos?</p>
-        <button class="btn" onclick="next(6)">A) Al rio</button>
-        <button class="btn" onclick="fail()">B) A un show mio </button>
-        <button class="btn" onclick="next(6)">C) A Chile ✈️</button>
+        <button class="btn" onclick="next(6)">A) Al rio 🌊</button>
+        <button class="btn" onclick="fail()">B) A un show mio 🎷</button>
+        <button class="btn" onclick="fail()">C) A Chile ✈️</button>
     </div>
 
     <div id="screen6" class="comic-card">
@@ -162,7 +162,7 @@
 
     <div id="screen8" class="comic-card">
         <h1>¡LO LOGRASTE! 🏆</h1>
-        <div class="gif-frame"><img src="snoopy10.gif" alt="Bailando"></div>
+        <div class="gif-frame"><img src="snoopy1.gif" alt="Bailando"></div>
         <p>Ganaste, pasaste todas las pruebas demostrando que me quieres.</p>
         <p>Presiona el botón para recibir tu premio.</p>
         <button class="btn btn-premio" onclick="next(9)">🎁 ABRIR PREMIO 🎁</button>
@@ -175,6 +175,8 @@
         <h2 style="color:#d63031;">¿QUIERES SER MI SAN VALENTÍN?</h2>
         <button class="btn btn-yes" onclick="finish()">¡SÍ, ACEPTO! 💍</button>
         <button class="btn" id="noBtn" onclick="moveNo()">No, gracias</button>
+        <br>
+        <img src="girasoles.gif" class="sunflower-mini" alt="Girasoles">
     </div>
 
     <div id="screen10" class="comic-card">
@@ -203,7 +205,7 @@
         let currentScreen = 1; let progress = 0;
 
         function updateProgress(step) {
-            progress = (step - 1) * 10; // Ajustado a 10 pasos
+            progress = (step - 1) * 10;
             if(progress > 100) progress = 100;
             document.getElementById('p-bar').style.width = progress + '%';
         }
@@ -213,8 +215,8 @@
             document.getElementById('screen' + id).classList.add('active');
             updateProgress(id);
             
-            if(id === 7) initGame(); // Pacman ahora es la pantalla 7
-            if(id === 9 || id === 10) confetti(); // Confeti en pregunta y final
+            if(id === 7) initGame();
+            if(id === 9 || id === 10) confetti();
         }
         function fail(type) {
             const modal = document.getElementById('errorModal');
