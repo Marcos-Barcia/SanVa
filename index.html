@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snoopy's Love Quest 🐾</title>
+    <link href="https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+    <style>
+        /* --- ESTETICA PEANUTS GENERAL --- */
+        body {
+            background-color: #ffce00; 
+            background-image: repeating-linear-gradient(45deg, #ffd700 25%, transparent 25%, transparent 75%, #ffd700 75%, #ffd700), repeating-linear-gradient(45deg, #ffd700 25%, #ffce00 25%, #ffce00 75%, #ffd700 75%, #ffd700);
+            font-family: 'Gloria Hallelujah', cursive;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0; overflow: hidden; color: #2c3e50;
+            position: relative;
+        }
+
+        /* FONDO DE GIRASOLES ABAJO */
+        .sunflower-border {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 130px;
+            background-image: url('girasoles.gif');
+            background-repeat: repeat-x; background-position: bottom center; background-size: auto 100%;
+            z-index: -1; opacity: 0.9; pointer-events: none;
+        }
+
+        /* Tarjetas */
+        .comic-card {
+            background: white; border: 4px solid black; border-radius: 15px 5px 25px 5px;
+            box-shadow: 12px 12px 0px rgba(0,0,0,0.8); padding: 25px; width: 90%; max-width: 500px;
+            text-align: center; position: relative; display: none; animation: bounceIn 0.6s ease;
+            z-index: 10;
+        }
+        .active { display: block; }
+        @keyframes bounceIn { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
+
+        h1 { font-size: 28px; margin-bottom: 15px; text-decoration: underline; text-decoration-style: wavy; text-decoration-color: #ff4757; }
+        p { font-size: 20px; line-height: 1.4; margin-bottom: 20px; }
+
+        /* Imágenes */
+        .gif-frame {
+            border: 3px solid black; padding: 10px; background: #fff; transform: rotate(-2deg);
+            margin: 0 auto 20px auto; width: fit-content; box-shadow: 5px 5px 0px #ccc;
+        }
+        .gif-frame img { max-width: 200px; max-height: 200px; display: block; }
+
+        .sunflower-mini {
+            width: 200px; height: auto; margin-top: 15px; display: inline-block;
+            border: 3px solid black; border-radius: 10px;
+        }
+
+        /* Botones */
+        .btn {
+            background: white; border: 3px solid black; padding: 15px; margin: 10px 0; width: 100%;
+            font-family: 'Gloria Hallelujah', cursive; font-size: 18px; cursor: pointer;
+            border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; transition: transform 0.2s;
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.2);
+        }
+        .btn:hover { background-color: #81ecec; transform: scale(1.02) rotate(-1deg); box-shadow: 8px 8px 0px black; }
+
+        .btn-premio { background: #ff7675; color: white; font-weight: bold; font-size: 20px; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .btn-yes { background-color: #55efc4; font-weight: bold; }
+
+        /* PAC-MAN */
+        #game-canvas { border: 4px solid black; background: #000; margin: 0 auto; display: block; }
+        .d-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; width: 140px; margin: 10px auto; }
+        .pad-key { background: #eee; border: 3px solid black; padding: 10px; font-size: 20px; cursor: pointer; border-radius: 10px; }
+        .pad-key:active { background: #ccc; }
+
+        .splash-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); display: none; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 20; border-radius: 10px;
+        }
+        .progress-bar-container {
+            position: fixed; top: 20px; width: 80%; max-width: 400px; height: 20px;
+            border: 3px solid black; border-radius: 20px; background: white; z-index: 50;
+        }
+        .progress-fill { height: 100%; background: #ff4757; width: 0%; border-radius: 15px; transition: width 0.5s ease; }
+        
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: white; border: 4px solid black; padding: 30px; border-radius: 20px; text-align: center; font-family: 'Gloria Hallelujah', cursive; max-width: 300px; }
+        .modal-content img { max-width: 150px; margin-bottom: 15px; border: 2px solid black; transform: rotate(3deg); }
+
+    </style>
+</head>
+<body onclick="forceMusic()">
+
+    <div class="sunflower-border"></div>
+    <audio id="bgMusic" loop autoplay> <source src="musica.mp3" type="audio/mpeg"> </audio>
+    <div class="progress-bar-container"> <div id="p-bar" class="progress-fill"></div> </div>
+
+    <div id="screen1" class="comic-card active">
+        <h1>¡HOLA AMOR! 🐾</h1>
+        <div class="gif-frame"><img src="snoopy1.gif" alt="Snoopy"></div>
+        <p>Snoopy ha preparado una serie de pruebas para ti hoy.</p>
+        <button class="btn" onclick="start()">¡Comenzar Aventura!</button>
+    </div>
+
+    <div id="screen2" class="comic-card">
+        <h1>NIVEL 1: El Sacrificio 🍕</h1>
+        <div class="gif-frame"><img src="snoopy2.gif" alt="Comiendo"></div>
+        <p>Si solo queda una ultima papita de la salchipapa...</p>
+        <button class="btn" onclick="next(3)">A) Me lo das a mí (obvio) 🥰</button>
+        <button class="btn" onclick="fail()">B) Te lo comes escondida 😈</button>
+        <button class="btn" onclick="fail()">C) Se lo damos a Bobi 🐶</button>
+    </div>
+
+    <div id="screen3" class="comic-card">
+        <h1>NIVEL 2: Memoria 📅</h1>
+        <div class="gif-frame"><img src="snoopy3.gif" alt="Pensando"></div>
+        <p>¿Que fue lo primero que te regale?</p>
+        <button class="btn" onclick="fail()">A) Pulsera y Collar</button>
+        <button class="btn" onclick="next(4)">B) Ramo de Flores</button>
+        <button class="btn" onclick="fail()">C) Algo de Snoopy</button>
+    </div>
+
+    <div id="screen4" class="comic-card">
+        <h1>NIVEL 3: La Verdad 🧐</h1>
+        <div class="gif-frame"><img src="snoopy6.gif" alt="Snoopy"></div>
+        <p>¿Quién es más "Dramático/a" en la relación?</p>
+        <button class="btn" onclick="fail('yo')">A) Marcos 🙋‍♂️</button>
+        <button class="btn" onclick="next(5)">B) Ariana (la reina del drama) 👸</button>
+        <button class="btn" onclick="fail('snoopy')">C) Snoopy 🐶</button>
+    </div>
+
+    <div id="screen5" class="comic-card">
+        <h1>NIVEL 4: Sueños ✈️</h1>
+        <div class="gif-frame"><img src="snoopy7.gif" alt="Viaje"></div>
+        <p>Si pudiéramos viajar ya mismo, ¿a dónde iríamos?</p>
+        <button class="btn" onclick="next(6)">A) Al rio</button>
+        <button class="btn" onclick="fail()">B) A un show mio </button>
+        <button class="btn" onclick="next(6)">C) A Chile ✈️</button>
+    </div>
+
+    <div id="screen6" class="comic-card">
+        <h1>NIVEL 5: El Chef 👨‍🍳</h1>
+        <div class="gif-frame"><img src="snoopy11.gif" alt="Cocinando"></div>
+        <p>¿Qué fue lo primero que te cociné?</p>
+        <button class="btn" onclick="fail()">A) Tortitas de harina</button>
+        <button class="btn" onclick="fail()">B) Ceviche</button>
+        <button class="btn" onclick="next(7)">C) Carne con patacón 🥩</button>
+    </div>
+
+    <div id="screen7" class="comic-card">
+        <h1>NIVEL 6: Snoopy-Man 👻</h1>
+        <p style="font-size: 16px; margin-bottom: 10px;">¡Esquiva los fantasmas y llega al corazón!</p>
+        <canvas id="game-canvas" width="300" height="300"></canvas>
+        <div class="d-pad">
+            <div></div><div class="pad-key" onclick="setDir(0,-1)">⬆️</div><div></div>
+            <div class="pad-key" onclick="setDir(-1,0)">⬅️</div>
+            <div class="pad-key" onclick="setDir(0,1)">⬇️</div>
+            <div class="pad-key" onclick="setDir(1,0)">➡️</div>
+        </div>
+        <div id="maze-splash" class="splash-overlay">
+            <h1 style="color:#ff4757; font-size:40px;">¡GANASTE! 🎉</h1>
+            <p>Snoopy sobrevivió.</p>
+            <button class="btn" style="background:#55efc4;" onclick="next(8)">CONTINUAR ➡️</button>
+        </div>
+    </div>
+
+    <div id="screen8" class="comic-card">
+        <h1>¡LO LOGRASTE! 🏆</h1>
+        <div class="gif-frame"><img src="snoopy10.gif" alt="Bailando"></div>
+        <p>Ganaste, pasaste todas las pruebas demostrando que me quieres.</p>
+        <p>Presiona el botón para recibir tu premio.</p>
+        <button class="btn btn-premio" onclick="next(9)">🎁 ABRIR PREMIO 🎁</button>
+    </div>
+
+    <div id="screen9" class="comic-card">
+        <h1>LA PREGUNTA 🌻</h1>
+        <div class="gif-frame"><img src="snoopy4.gif" alt="Amor"></div>
+        <p>Eres lo mejor que me ha pasado en la vida.</p>
+        <h2 style="color:#d63031;">¿QUIERES SER MI SAN VALENTÍN?</h2>
+        <button class="btn btn-yes" onclick="finish()">¡SÍ, ACEPTO! 💍</button>
+        <button class="btn" id="noBtn" onclick="moveNo()">No, gracias</button>
+    </div>
+
+    <div id="screen10" class="comic-card">
+        <h1>¡TE AMO ARIANITA! ❤️</h1>
+        <div class="gif-frame"><img src="snoopy9.gif" alt="Celebrar"></div>
+        <p>You are my eternal Valentin ❤️</p>
+    </div>
+
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <img src="snoopy8.gif" alt="Error Snoopy">
+            <h2 id="errorTitle" style="font-size:30px;">💔</h2>
+            <p id="errorText">Respuesta incorrecta.</p>
+            <button class="btn" onclick="closeError()">Intentar de nuevo</button>
+        </div>
+    </div>
+
+    <script>
+        /* --- CONTROL GENERAL --- */
+        let musicPlaying = false;
+        window.onload = function() {
+            document.getElementById('bgMusic').play().then(() => { musicPlaying = true; }).catch(e => { console.log("Autoplay blocked"); });
+        };
+        function forceMusic() { if (!musicPlaying) { document.getElementById('bgMusic').play(); musicPlaying = true; } }
+
+        let currentScreen = 1; let progress = 0;
+
+        function updateProgress(step) {
+            progress = (step - 1) * 10; // Ajustado a 10 pasos
+            if(progress > 100) progress = 100;
+            document.getElementById('p-bar').style.width = progress + '%';
+        }
+        function start() { forceMusic(); next(2); }
+        function next(id) {
+            document.querySelectorAll('.comic-card').forEach(c => c.classList.remove('active'));
+            document.getElementById('screen' + id).classList.add('active');
+            updateProgress(id);
+            
+            if(id === 7) initGame(); // Pacman ahora es la pantalla 7
+            if(id === 9 || id === 10) confetti(); // Confeti en pregunta y final
+        }
+        function fail(type) {
+            const modal = document.getElementById('errorModal');
+            const title = document.getElementById('errorTitle');
+            const text = document.getElementById('errorText');
+            if (type === 'snoopy') { title.innerText = "¡Nop! 🐶"; text.innerText = "Snoopy no es tan dramático..."; }
+            else if (type === 'yo') { title.innerText = "🤨"; text.innerText = "¿Estás segura?"; }
+            else { title.innerText = "💔"; text.innerText = "Respuesta incorrecta."; }
+            modal.style.display = 'flex';
+        }
+        function closeError() { document.getElementById('errorModal').style.display = 'none'; }
+        function moveNo() {
+            const btn = document.getElementById('noBtn');
+            btn.style.transform = `translate(${(Math.random()-0.5)*200}px, ${(Math.random()-0.5)*200}px)`;
+        }
+        function finish() { next(10); }
+
+        /* --- PAC-MAN --- */
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const TILE_SIZE = 20; 
+        const COLS = canvas.width / TILE_SIZE;
+        const ROWS = canvas.height / TILE_SIZE;
+        let gameRunning = false;
+        let player = { x: 1, y: 1, dx: 0, dy: 0, nextDx: 0, nextDy: 0 };
+        let ghosts = [];
+        let snoopyImg = new Image(); snoopyImg.src = 'snoopy5.gif';
+
+        const levelMap = [
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,0,0,0,1,0,0,0,0,0,1,0,0,0,1],
+            [1,0,1,1,1,0,1,1,1,0,1,0,1,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
+            [1,1,1,0,1,1,1,0,1,1,1,0,1,0,1],
+            [1,0,0,0,1,9,9,9,1,0,0,0,0,0,1],
+            [1,0,1,0,1,1,1,1,1,0,1,1,1,1,1],
+            [1,0,1,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,1,1,1,0,1,1,1,0,1,1,1,0,1],
+            [1,0,0,0,1,0,0,0,1,0,1,0,0,0,1],
+            [1,1,1,0,1,1,1,0,1,0,1,0,1,1,1],
+            [1,0,0,0,0,0,0,0,0,0,1,0,0,0,1],
+            [1,0,1,1,1,0,1,1,1,0,1,0,1,0,1],
+            [1,0,0,0,0,0,0,2,0,0,0,0,1,0,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+        ];
+
+        function initGame() {
+            if(gameRunning) return;
+            resetPlayer();
+            ghosts = [{x:7, y:5, color:'#ff0000', dx:1, dy:0}, {x:8, y:5, color:'#00ffff', dx:0, dy:1}];
+            gameRunning = true;
+            requestAnimationFrame(gameLoop);
+            document.onkeydown = (e) => {
+                if(e.key === 'ArrowUp') setDir(0,-1);
+                if(e.key === 'ArrowDown') setDir(0,1);
+                if(e.key === 'ArrowLeft') setDir(-1,0);
+                if(e.key === 'ArrowRight') setDir(1,0);
+            };
+        }
+        function resetPlayer() { player = { x: 1, y: 1, dx: 0, dy: 0, nextDx: 0, nextDy: 0 }; }
+        function setDir(dx, dy) { player.nextDx = dx; player.nextDy = dy; }
+        function gameLoop() { if(!gameRunning) return; update(); draw(); setTimeout(() => requestAnimationFrame(gameLoop), 100); }
+        function update() {
+            if(player.nextDx !== 0 || player.nextDy !== 0) {
+                if(levelMap[player.y + player.nextDy][player.x + player.nextDx] !== 1) { player.dx = player.nextDx; player.dy = player.nextDy; }
+            }
+            if(levelMap[player.y + player.dy][player.x + player.dx] !== 1) { player.x += player.dx; player.y += player.dy; }
+            if(levelMap[player.y][player.x] === 0) levelMap[player.y][player.x] = 3; 
+            if(levelMap[player.y][player.x] === 2) { gameRunning = false; document.getElementById('maze-splash').style.display = 'flex'; return; }
+            ghosts.forEach(g => {
+                let possibleDirs = [];
+                if(levelMap[g.y][g.x+1] !== 1) possibleDirs.push({dx:1, dy:0});
+                if(levelMap[g.y][g.x-1] !== 1) possibleDirs.push({dx:-1, dy:0});
+                if(levelMap[g.y+1][g.x] !== 1) possibleDirs.push({dx:0, dy:1});
+                if(levelMap[g.y-1][g.x] !== 1) possibleDirs.push({dx:0, dy:-1});
+                if(possibleDirs.length > 2 || levelMap[g.y+g.dy][g.x+g.dx] === 1) {
+                     let randDir = possibleDirs[Math.floor(Math.random() * possibleDirs.length)];
+                     g.dx = randDir.dx; g.dy = randDir.dy;
+                }
+                g.x += g.dx; g.y += g.dy;
+                if(g.x === player.x && g.y === player.y) resetPlayer();
+            });
+        }
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for(let y=0; y<ROWS; y++) {
+                for(let x=0; x<COLS; x++) {
+                    let cell = levelMap[y][x];
+                    if(cell === 1) { ctx.fillStyle = '#191970'; ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE-1, TILE_SIZE-1); } 
+                    else if(cell === 0) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x*TILE_SIZE+TILE_SIZE/2, y*TILE_SIZE+TILE_SIZE/2, 3, 0, Math.PI*2); ctx.fill(); } 
+                    else if(cell === 2) { ctx.font = "18px Arial"; ctx.fillText("❤️", x*TILE_SIZE, y*TILE_SIZE+18); }
+                }
+            }
+            ctx.drawImage(snoopyImg, player.x*TILE_SIZE, player.y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            ghosts.forEach(g => {
+                ctx.fillStyle = g.color; ctx.beginPath();
+                ctx.arc(g.x*TILE_SIZE+TILE_SIZE/2, g.y*TILE_SIZE+TILE_SIZE/2, TILE_SIZE/2, Math.PI, 0);
+                ctx.fillRect(g.x*TILE_SIZE, g.y*TILE_SIZE+TILE_SIZE/2, TILE_SIZE, TILE_SIZE/2);
+                ctx.fill();
+            });
+        }
+
+        function confetti() {
+            setInterval(() => {
+                const el = document.createElement('div'); el.innerText = '❤️';
+                el.style.position = 'fixed'; el.style.left = Math.random() * 100 + 'vw';
+                el.style.top = '-5vh'; el.style.fontSize = Math.random() * 30 + 10 + 'px';
+                el.style.animation = 'fall 3s linear'; el.style.zIndex = '100'; 
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 3000);
+            }, 100);
+            if (!document.getElementById('confetti-style')) {
+                const style = document.createElement('style');
+                style.id = 'confetti-style';
+                style.innerText = `@keyframes fall { to { transform: translateY(105vh); } }`;
+                document.head.appendChild(style);
+            }
+        }
+    </script>
+</body>
+</html>
